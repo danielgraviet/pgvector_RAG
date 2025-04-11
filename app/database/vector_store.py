@@ -36,7 +36,7 @@ class VectorStore:
             A list of floats representing the embedding.
         """
         text = text.replace("\n", " ")
-        start_time = time.time()
+        start_time = time.time() # cool function here that tracks the time for a function call. 
         embedding = (
             self.openai_client.embeddings.create(
                 input=[text],
@@ -45,8 +45,8 @@ class VectorStore:
             .data[0]
             .embedding
         )
-        elapsed_time = time.time() - start_time
-        logging.info(f"Embedding generated in {elapsed_time:.3f} seconds")
+        elapsed_time = time.time() - start_time # end of timer
+        logging.info(f"Embedding generated in {elapsed_time:.3f} seconds") # output timer. 
         return embedding
 
     def create_tables(self) -> None:
@@ -69,7 +69,7 @@ class VectorStore:
             df: A pandas DataFrame containing the data to insert or update.
                 Expected columns: id, metadata, contents, embedding
         """
-        records = df.to_records(index=False)
+        records = df.to_records(index=False) # is this a built in function?
         self.vec_client.upsert(list(records))
         logging.info(
             f"Inserted {len(df)} records into {self.vector_settings.table_name}"
