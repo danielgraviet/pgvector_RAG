@@ -24,7 +24,7 @@ class VectorStore:
             self.vector_settings.embedding_dimensions,
             time_partition_interval=self.vector_settings.time_partition_interval,
         )
-
+            
     def get_embedding(self, text: str) -> List[float]:
         """
         Generate embedding for the given text.
