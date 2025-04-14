@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pgvector-rag" # Or your desired package name
+version = "0.1.0"
+requires-python = ">=3.10"
+# Add any runtime dependencies your app needs here
+# dependencies = [
+#     "pandas", "openai", "timescale-vector", "fastapi", "uvicorn", ...
+# ]
+
+[tool.setuptools.packages.find]
+# Tell setuptools to look for packages in the current directory ('.')
+where = ["."]
+# Specify the top-level packages to include
+include = ["app*", "config*"]
+# Exclude tests from the installable package (optional but common)
+# exclude = ["tests*"]

@@ -4,7 +4,7 @@ from typing import Any, List, Optional, Tuple, Union
 from datetime import datetime
 
 import pandas as pd
-from config.settings import get_settings
+from app.config.settings import get_settings
 from openai import OpenAI
 from timescale_vector import client
 
