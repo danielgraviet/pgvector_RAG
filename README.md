@@ -11,7 +11,7 @@ DB, and then it uses GPT-4o to generate a coherent and contextually relevant ans
 This way, it reduces the chance of AI hallucinations for more accurate answers regarding the law firm. 
 
 ## Example
-<img src="./example.png" alt="Example Image" width="300" height="200">
+<img src="./example.png" alt="Example Image" width="900" height="300">
 
 ## Features
 
