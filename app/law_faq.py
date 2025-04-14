@@ -28,7 +28,7 @@ def print_response(query: str, response, section_title: str):
 # --------------------------------------------------------------
 
 section = "Relevant Question (Car Accident)"
-relevant_question = "What should I do after a car accident?"
+relevant_question = "how much does jake gunter cost to be your lawyer?"
 results = vec.search(relevant_question, limit=3)
 response = Synthesizer.generate_response(question=relevant_question, context=results)
 print_response(relevant_question, response, section)

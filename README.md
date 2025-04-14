@@ -10,6 +10,9 @@ I designed it to take a single question at a time, find relevant information fom
 DB, and then it uses GPT-4o to generate a coherent and contextually relevant answer based ONLY on the retrieved information.
 This way, it reduces the chance of AI hallucinations for more accurate answers regarding the law firm. 
 
+## Example
+<img src="./example.png" alt="Example Image" width="300" height="200">
+
 ## Features
 
 *   **Vector Embeddings:** Generates text embeddings using OpenAI models (`text-embedding-3-small` by default).
