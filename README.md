@@ -11,7 +11,7 @@ DB, and then it uses GPT-4o to generate a coherent and contextually relevant ans
 This way, it reduces the chance of AI hallucinations for more accurate answers regarding the law firm. 
 
 ## Example
-<img src="./example.png" alt="Example Image" width="900" height="300">
+<img src="./example.png" alt="Example Image" width="1300" height="300">
 
 ## Features
 
@@ -180,3 +180,7 @@ Application settings are managed in `config/settings.py` using Pydantic models a
 *   Develop a user interface (CLI or Web).
 *   Add caching for embeddings to reduce API calls.
 *   Optimize batch processing for data ingestion.
+
+## Next Steps
+
+* 

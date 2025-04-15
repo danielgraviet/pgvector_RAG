@@ -24,11 +24,11 @@ def print_response(query: str, response, section_title: str):
     print(f"{colors.SEPARATOR}-------------------------------------")
     
 # --------------------------------------------------------------
-# Shipping question
+# Input Any Question 
 # --------------------------------------------------------------
 
 section = "Relevant Question (Car Accident)"
-relevant_question = "how much does jake gunter cost to be your lawyer?"
+relevant_question = "what is the UV in Provo Utah today?"
 results = vec.search(relevant_question, limit=3)
 response = Synthesizer.generate_response(question=relevant_question, context=results)
 print_response(relevant_question, response, section)

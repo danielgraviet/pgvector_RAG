@@ -52,3 +52,5 @@ typing_extensions==4.13.1
 tzdata==2025.2
 urllib3==2.4.0
 yarl==1.19.0
+fastapi==0.115.12
+
