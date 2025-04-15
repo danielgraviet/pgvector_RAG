@@ -35,6 +35,10 @@ class VectorStore:
         Returns:
             A list of floats representing the embedding.
         """
+        
+        if len(text.strip()) == 0:
+            raise ValueError("Input text cannot be empty.")
+                    
         text = text.replace("\n", " ")
         start_time = time.time() # cool function here that tracks the time for a function call. 
         embedding = (

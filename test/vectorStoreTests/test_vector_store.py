@@ -1,9 +1,4 @@
 import pytest
-import sys
-import os
-print(f"\n--- sys.path at start of test_vector_store.py ({os.path.basename(__file__)}) ---")
-for p in sys.path: print(p)
-print("------\n")
 import pandas as pd
 from unittest.mock import MagicMock, patch, ANY
 from datetime import datetime
@@ -44,29 +39,23 @@ def mock_vec_client(mocker):
 
 @pytest.fixture
 def vector_store_instance(mocker, mock_settings, mock_openai_client, mock_vec_client):
-    # Patch get_settings where it's imported in vector_store.py
     mocker.patch('app.database.vector_store.get_settings', return_value=mock_settings)
-
-    # Patch the OpenAI class and store the mock *class* itself
     mock_openai_class = mocker.patch('app.database.vector_store.OpenAI', return_value=mock_openai_client)
+    mock_timescale_sync_class = mocker.patch('timescale_vector.client.Sync', return_value=mock_vec_client) 
 
-    # Patch the Sync class
-    mock_timescale_sync_class = mocker.patch('timescale_vector.client.Sync', return_value=mock_vec_client) # Keep ref if needed
-
-    # Now initialize VectorStore, which will use the mocked get_settings and OpenAI
     store = VectorStore()
 
-    # Optionally attach the mock *classes* to the instance for assertion convenience
     store.mock_openai_class = mock_openai_class
     store.mock_timescale_sync_class = mock_timescale_sync_class
-    store.mock_openai_client = mock_openai_client # The instance is still useful
-    store.mock_vec_client = mock_vec_client       # The instance is still useful
-    store.mock_settings = mock_settings           # Attach mock settings
+    store.mock_openai_client = mock_openai_client 
+    store.mock_vec_client = mock_vec_client       
+    store.mock_settings = mock_settings           
 
     return store
 
-def test_vector_store_initialization(vector_store_instance, mock_settings): # Removed unused mocks from args
+def test_vector_store_initialization(vector_store_instance, mock_settings):
     """Test if VectorStore initializes correctly with mocked dependencies."""
+    print("Running Test: test_vector_store_initialization")
     store = vector_store_instance
 
     # Assert attributes are set correctly using the mocks
@@ -78,10 +67,35 @@ def test_vector_store_initialization(vector_store_instance, mock_settings): # Re
     # Assert the mocked OpenAI *class* was called correctly
     store.mock_openai_class.assert_called_once_with(api_key=mock_settings.openai.api_key)
 
-    # Assert the mocked Timescale Sync *class* was called correctly
     store.mock_timescale_sync_class.assert_called_once_with(
         mock_settings.database.service_url,
         mock_settings.vector_store.table_name,
         mock_settings.vector_store.embedding_dimensions,
         time_partition_interval=mock_settings.vector_store.time_partition_interval,
     )
+    
+def valid_test_get_embedding(vector_store_instance):
+    print("Running Test: valid_test_get_embedding")
+    # initialize the vector store using the passed in instance
+    store = vector_store_instance
+    
+    # call the method "get_embedding" and store the result
+    embeddingList = store.get_embedding("testString")
+    
+    # make sure it returns something 
+    assert len(embeddingList) != 0
+    
+def test_get_embedding_empty_input(vector_store_instance):
+    print("Running Test: test_get_embedding_empty_input")
+    # initialize the vector store using the passed in instance
+    store = vector_store_instance
+    
+    # call the method "get_embedding" with empty string. 
+    try:
+        embeddingList = store.get_embedding("")
+        assert False, "Expected ValueError for empty input, but none was raised"
+    except ValueError as e:
+        print(f"ValueError caught: {e}") 
+    
+    
+    
