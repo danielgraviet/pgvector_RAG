@@ -6,7 +6,6 @@ import uuid
 
 from app.database.vector_store import VectorStore
 
-
 @pytest.fixture
 def mock_settings():
     settings = MagicMock()
@@ -55,7 +54,7 @@ def vector_store_instance(mocker, mock_settings, mock_openai_client, mock_vec_cl
 
 def test_vector_store_initialization(vector_store_instance, mock_settings):
     """Test if VectorStore initializes correctly with mocked dependencies."""
-    print("Running Test: test_vector_store_initialization")
+    print("\nRunning Test: test_vector_store_initialization")
     store = vector_store_instance
 
     # Assert attributes are set correctly using the mocks
@@ -74,8 +73,8 @@ def test_vector_store_initialization(vector_store_instance, mock_settings):
         time_partition_interval=mock_settings.vector_store.time_partition_interval,
     )
     
-def valid_test_get_embedding(vector_store_instance):
-    print("Running Test: valid_test_get_embedding")
+def test_get_embedding(vector_store_instance):
+    print("\nRunning Test: valid_test_get_embedding")
     # initialize the vector store using the passed in instance
     store = vector_store_instance
     
@@ -86,7 +85,7 @@ def valid_test_get_embedding(vector_store_instance):
     assert len(embeddingList) != 0
     
 def test_get_embedding_empty_input(vector_store_instance):
-    print("Running Test: test_get_embedding_empty_input")
+    print("\nRunning Test: test_get_embedding_empty_input")
     # initialize the vector store using the passed in instance
     store = vector_store_instance
     
@@ -95,7 +94,7 @@ def test_get_embedding_empty_input(vector_store_instance):
         embeddingList = store.get_embedding("")
         assert False, "Expected ValueError for empty input, but none was raised"
     except ValueError as e:
-        print(f"ValueError caught: {e}") 
+        print(f"\nValueError caught: {e}") 
     
     
     
