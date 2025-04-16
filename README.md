@@ -13,6 +13,10 @@ This way, it reduces the chance of AI hallucinations for more accurate answers r
 ## Example
 <img src="./example.png" alt="Example Image" width="1300" height="300">
 
+## Useful Commands
+* To run locally, in the root dir: "uvicorn main:app --reload"
+* To run docker, in docker dir: "docker compose up - d"
+
 ## Features
 
 *   **Vector Embeddings:** Generates text embeddings using OpenAI models (`text-embedding-3-small` by default).
