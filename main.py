@@ -2,11 +2,19 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from app.database.vector_store import VectorStore
+from app.services.synthesizer import Synthesizer
+import pandas as pd
 import os
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI()
-vector_store = VectorStore()  # Initialize your VectorStore
+vector_store = VectorStore()  # Initialize VectorStore
+synthesizer = Synthesizer()  # Initialize Synthesizer
 
 class QueryRequest(BaseModel):
     question: str
@@ -14,19 +22,27 @@ class QueryRequest(BaseModel):
 @app.post("/faq/query")
 async def query_faq(request: QueryRequest):
     try:
-        # Generate embedding for the question
-        query_embedding = vector_store.get_embedding(request.question)
-        # Search the vector store (adjust based on your VectorStore search method)
-        results = vector_store.vec_client.search(
-            embedding=query_embedding,
-            limit=1  # Get the most relevant FAQ
-        )
-        if results:
-            # Assuming results return (id, metadata, content, embedding, score)
-            return {"answer": results[0][2]}  # Return content field
-        return {"answer": "No relevant FAQ found."}
+        logging.info(f"Received question: {request.question}")
+        # Search the vector store using query_text
+        results = vector_store.search(query_text=request.question, limit=3, return_dataframe=True)
+        logging.info(f"Search results: {results.to_dict(orient='records')}")
+        if not results.empty:
+            # Generate synthesized response
+            response = synthesizer.generate_response(question=request.question, context=results)
+            logging.info(f"Returning answer: {response.answer}")
+            return {
+                "answer": response.answer,
+                "thought_process": response.thought_process,
+                "enough_context": response.enough_context
+            }
+        logging.info("No results found")
+        return {
+            "answer": "No relevant FAQ found.",
+            "thought_process": ["No context available"],
+            "enough_context": False
+        }
     except Exception as e:
-        logging.error(f"Error processing query: {str(e)}")
+        logging.error(f"Error processing query: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/", response_class=HTMLResponse)
@@ -43,6 +59,9 @@ async def get_faq_form():
             input { width: 100%; padding: 10px; margin: 10px 0; }
             button { padding: 10px 20px; }
             #response { margin-top: 20px; }
+            .thought-process { margin-top: 10px; color: #555; }
+            .context-true { color: green; }
+            .context-false { color: red; }
         </style>
     </head>
     <body>
@@ -63,10 +82,32 @@ async def get_faq_form():
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ question })
                     });
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        throw new Error(errorData.detail || "Server error");
+                    }
                     const data = await res.json();
-                    responseDiv.innerHTML = `<p><strong>Answer:</strong> ${data.answer}</p>`;
+                    console.log("Response data:", data);
+                    if (data && typeof data.answer === "string") {
+                        let html = `<p><strong>Answer:</strong> ${data.answer}</p>`;
+                        if (data.thought_process) {
+                            html += `<div class="thought-process"><strong>Thought process:</strong><ul>`;
+                            data.thought_process.forEach(thought => {
+                                html += `<li>${thought}</li>`;
+                            });
+                            html += `</ul></div>`;
+                        }
+                        if (data.enough_context !== undefined) {
+                            const contextClass = data.enough_context ? "context-true" : "context-false";
+                            html += `<p><strong>Context:</strong> <span class="${contextClass}">${data.enough_context}</span></p>`;
+                        }
+                        responseDiv.innerHTML = html;
+                    } else {
+                        responseDiv.innerHTML = `<p><strong>Error:</strong> Invalid response format: ${JSON.stringify(data)}</p>`;
+                    }
                 } catch (error) {
-                    responseDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+                    console.error("Fetch error:", error);
+                    responseDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
                 }
             });
         </script>
