@@ -1,3 +1,4 @@
+import asyncpg
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -17,6 +18,25 @@ synthesizer = Synthesizer()  # Initialize Synthesizer
 
 class QueryRequest(BaseModel):
     question: str
+    
+@app.on_event("startup")
+async def startup_event():
+    """initialize database tables and index"""
+    await vector_store.create_tables()
+    try:
+        async with asyncpg.create_pool(vector_store.settings.database.service_url) as pool:
+            async with pool.acquire() as conn:
+                index_exists = await conn.fetchval(
+                    "SELECT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'embeddings_embedding_idx')"
+                )
+                if not index_exists:
+                    await vector_store.create_index()
+                    logging.info("Created embeddings_embedding_idx")
+                else:
+                    logging.info("Index embeddings_embedding_idx already exists, skipping creation")
+    except Exception as e:
+        logging.error(f"Error checking/creating index: {str(e)}")
+        raise
 
 @app.post("/faq/query")
 async def query_faq(request: QueryRequest):
