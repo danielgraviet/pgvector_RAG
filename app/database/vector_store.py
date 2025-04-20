@@ -4,10 +4,14 @@ from typing import Any, List, Optional, Tuple, Union
 from datetime import datetime
 
 import pandas as pd
+import asyncpg
 from app.config.settings import get_settings
 from openai import OpenAI
 from timescale_vector import client
 
+logger = logging.getLogger(__name__)
+if not logger.hasHandlers():
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class VectorStore:
     """A class for managing vector operations and database interactions."""
@@ -18,12 +22,17 @@ class VectorStore:
         self.openai_client = OpenAI(api_key=self.settings.openai.api_key)
         self.embedding_model = self.settings.openai.embedding_model
         self.vector_settings = self.settings.vector_store
-        self.vec_client = client.Async(
-            self.settings.database.service_url,
-            self.vector_settings.table_name,
-            self.vector_settings.embedding_dimensions,
-            time_partition_interval=self.vector_settings.time_partition_interval,
-        )
+        try:
+            self.vec_client = client.Async(
+                self.settings.database.service_url,
+                self.vector_settings.table_name,
+                self.vector_settings.embedding_dimensions,
+                time_partition_interval=self.vector_settings.time_partition_interval,
+            )
+            logger.info("timescale vector client init success")
+        except Exception as e:
+            logger.error(f"Failed to initialize Timescale Vector client: {e}", exc_info=True)
+            raise
             
     def get_embedding(self, text: str) -> List[float]:
         """
@@ -54,12 +63,31 @@ class VectorStore:
         return embedding
 
     async def create_tables(self) -> None:
-        """Create the necessary tablesin the database"""
-        await self.vec_client.create_tables()
+        """Create the necessary tables in the database"""
+        logger.info(f"Attempting to create tables for '{self.vector_settings.table_name}' (if they don't exist)...")
+        try:
+            await self.vec_client.create_tables()
+            logger.info(f"Tables for '{self.vector_settings.table_name}' checked/created successfully.")
+        except Exception as e:
+            logger.error(f"Failed during table creation/check for '{self.vector_settings.table_name}': {e}", exc_info=True)
+            raise # Re-raise unexpected errors
 
     async def create_index(self) -> None:
-        """Create the StreamingDiskANN index to spseed up similarity search"""
-        await self.vec_client.create_embedding_index(client.DiskAnnIndex())
+        """Create the embedding index (e.g., DiskAnn) if it doesn't already exist."""
+        index_name = f"{self.vector_settings.table_name}_embedding_idx" # Construct standard index name
+        logger.info(f"Attempting to create index '{index_name}' (if it doesn't exist)...")
+        try:
+            # Pass the specific index type you want, e.g., DiskAnnIndex
+            await self.vec_client.create_embedding_index(client.DiskAnnIndex())
+            logger.info(f"Index '{index_name}' created successfully.")
+        except asyncpg.exceptions.DuplicateTableError:
+            # This specific error means the index already exists, which is fine.
+            logger.info(f"Index '{index_name}' already exists, skipping creation.")
+            # Do not re-raise this exception, allow the script to continue.
+        except Exception as e:
+            # Catch any other unexpected errors during index creation
+            logger.error(f"An unexpected error occurred while creating index '{index_name}': {e}", exc_info=True)
+            raise # Re-raise other errors to signal a real problem
 
     async def drop_index(self) -> None:
         """Drop the StreamingDiskANN index in the database"""
