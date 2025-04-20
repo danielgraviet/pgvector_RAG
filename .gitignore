@@ -94,3 +94,5 @@ venv/
 
 # exclude data from source control by default
 # /data/
+
+/private.txt

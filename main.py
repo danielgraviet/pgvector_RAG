@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from app.database.vector_store import VectorStore
 from app.services.synthesizer import Synthesizer
 import pandas as pd
-import os
 import logging
 from dotenv import load_dotenv
 
@@ -24,7 +23,7 @@ async def query_faq(request: QueryRequest):
     try:
         logging.info(f"Received question: {request.question}")
         # Search the vector store using query_text
-        results = vector_store.search(query_text=request.question, limit=3, return_dataframe=True)
+        results = await vector_store.search(query_text=request.question, limit=3, return_dataframe=True)
         logging.info(f"Search results: {results.to_dict(orient='records')}")
         if not results.empty:
             # Generate synthesized response

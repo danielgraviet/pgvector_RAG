@@ -18,7 +18,7 @@ class VectorStore:
         self.openai_client = OpenAI(api_key=self.settings.openai.api_key)
         self.embedding_model = self.settings.openai.embedding_model
         self.vector_settings = self.settings.vector_store
-        self.vec_client = client.Sync(
+        self.vec_client = client.Async(
             self.settings.database.service_url,
             self.vector_settings.table_name,
             self.vector_settings.embedding_dimensions,
@@ -53,19 +53,19 @@ class VectorStore:
         logging.info(f"Embedding generated in {elapsed_time:.3f} seconds") # output timer. 
         return embedding
 
-    def create_tables(self) -> None:
+    async def create_tables(self) -> None:
         """Create the necessary tablesin the database"""
-        self.vec_client.create_tables()
+        await self.vec_client.create_tables()
 
-    def create_index(self) -> None:
+    async def create_index(self) -> None:
         """Create the StreamingDiskANN index to spseed up similarity search"""
-        self.vec_client.create_embedding_index(client.DiskAnnIndex())
+        await self.vec_client.create_embedding_index(client.DiskAnnIndex())
 
-    def drop_index(self) -> None:
+    async def drop_index(self) -> None:
         """Drop the StreamingDiskANN index in the database"""
-        self.vec_client.drop_embedding_index()
+        await self.vec_client.drop_embedding_index()
 
-    def upsert(self, df: pd.DataFrame) -> None:
+    async def upsert(self, df: pd.DataFrame) -> None:
         """
         Insert or update records in the database from a pandas DataFrame.
 
@@ -74,12 +74,12 @@ class VectorStore:
                 Expected columns: id, metadata, contents, embedding
         """
         records = df.to_records(index=False) # is this a built in function?
-        self.vec_client.upsert(list(records))
+        await self.vec_client.upsert(list(records))
         logging.info(
             f"Inserted {len(df)} records into {self.vector_settings.table_name}"
         )
 
-    def search(
+    async def search(
         self,
         query_text: str,
         limit: int = 5,
@@ -145,7 +145,7 @@ class VectorStore:
             start_date, end_date = time_range
             search_args["uuid_time_filter"] = client.UUIDTimeRange(start_date, end_date)
 
-        results = self.vec_client.search(query_embedding, **search_args)
+        results = await self.vec_client.search(query_embedding, **search_args)
         elapsed_time = time.time() - start_time
 
         logging.info(f"Vector search completed in {elapsed_time:.3f} seconds")
@@ -180,10 +180,10 @@ class VectorStore:
 
         # Convert id to string for better readability
         df["id"] = df["id"].astype(str)
-
+    
         return df
 
-    def delete(
+    async def delete(
         self,
         ids: List[str] = None,
         metadata_filter: dict = None,
@@ -215,15 +215,15 @@ class VectorStore:
             )
 
         if delete_all:
-            self.vec_client.delete_all()
+            await self.vec_client.delete_all()
             logging.info(f"Deleted all records from {self.vector_settings.table_name}")
         elif ids:
-            self.vec_client.delete_by_ids(ids)
+            await self.vec_client.delete_by_ids(ids)
             logging.info(
                 f"Deleted {len(ids)} records from {self.vector_settings.table_name}"
             )
         elif metadata_filter:
-            self.vec_client.delete_by_metadata(metadata_filter)
+            await self.vec_client.delete_by_metadata(metadata_filter)
             logging.info(
                 f"Deleted records matching metadata filter from {self.vector_settings.table_name}"
             )

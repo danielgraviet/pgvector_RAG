@@ -15,6 +15,3 @@ CONTEXT_TRUE = Fore.GREEN            # Green for True context
 CONTEXT_FALSE = Fore.RED             # Red for False context
 QUERY = Fore.BLUE + Style.BRIGHT     # Bright Blue for the initial query text
 SEPARATOR = Fore.WHITE + Style.DIM   # Dim white for separators
-
-# You can add more colors as needed
-# Example: ERROR = Fore.RED + Style.BRIGHT
