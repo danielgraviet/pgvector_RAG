@@ -175,6 +175,9 @@ Application settings are managed in `config/settings.py` using Pydantic models a
 *   The `insert_vectors.py` script uses `uuid_from_time(datetime.now())` to generate time-based UUIDs (UUIDv1) for records. This allows for time-based filtering in searches. If your data has specific timestamps, you can modify the script to use those timestamps when generating UUIDs.
 *   Ensure your OpenAI API key has sufficient credits/quota for generating embeddings and completions.
 *   The `vector_store.py` search method provides powerful filtering capabilities. Refer to its docstrings and the Timescale Vector documentation for more advanced usage.
+*   When resetting a timescale instance, pay close attention to the connection string and password format. 
+*   Use `export TIMESCALE_SERVICE_URL="YOURPASSWORD"` to update the env file. 
+*   For sanity check, run `echo $TIMESCALE_SERVICE_URL` and you should see the correct password in the root of the file. 
 
 ## Potential Improvements / Future Work
 
