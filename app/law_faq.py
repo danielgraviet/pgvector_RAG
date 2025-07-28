@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from database.vector_store import VectorStore
 from services.synthesizer import Synthesizer
@@ -26,9 +27,12 @@ def print_response(query: str, response, section_title: str):
 # --------------------------------------------------------------
 # Input Any Question 
 # --------------------------------------------------------------
-
-section = "Relevant Question (Car Accident)"
-relevant_question = "what is the UV in Provo Utah today?"
-results = vec.search(relevant_question, limit=3)
-response = Synthesizer.generate_response(question=relevant_question, context=results)
-print_response(relevant_question, response, section)
+async def main():
+    section = "Relevant Question (Car Accident)"
+    relevant_question = "What should I do after a car accident?"
+    results = await vec.search(relevant_question, limit=3)
+    response = Synthesizer.generate_response(question=relevant_question, context=results)
+    print_response(relevant_question, response, section)
+    
+if __name__ == "__main__":
+    asyncio.run(main())

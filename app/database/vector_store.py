@@ -62,15 +62,21 @@ class VectorStore:
         logging.info(f"Embedding generated in {elapsed_time:.3f} seconds") # output timer. 
         return embedding
 
-    async def create_tables(self) -> None:
-        """Create the necessary tables in the database"""
-        logger.info(f"Attempting to create tables for '{self.vector_settings.table_name}' (if they don't exist)...")
+    async def create_tables(self, table_name="embeddings"):
+        """Creates the necessary tables in the database if they don't exist."""
+        logging.info(f"Attempting to create tables for '{table_name}' (if they don't exist)...")
         try:
+            # --- START OF ADDED DEBUG CODE ---
+            print("---")
+            print(f"DEBUG: The URL being used is: '{self.vec_client.service_url}'")
+            print("---")
+            # ---  END OF ADDED DEBUG CODE  ---
+
             await self.vec_client.create_tables()
-            logger.info(f"Tables for '{self.vector_settings.table_name}' checked/created successfully.")
+            logging.info(f"Table '{table_name}' check/creation successful.")
         except Exception as e:
-            logger.error(f"Failed during table creation/check for '{self.vector_settings.table_name}': {e}", exc_info=True)
-            raise # Re-raise unexpected errors
+            logging.error(f"Failed during table creation/check for '{table_name}': {e}", exc_info=True)
+            raise
 
     async def create_index(self) -> None:
         """Create the embedding index (e.g., DiskAnn) if it doesn't already exist."""
