@@ -36,7 +36,7 @@ class OpenAISettings(LLMSettings):
 class DatabaseSettings(BaseModel):
     """Database connection settings."""
 
-    service_url: str = Field(default_factory=lambda: os.getenv("TIMESCALE_SERVICE_URL"))
+    service_url: str = Field(default_factory=lambda: os.getenv("NEON_DB_CONNECTION_STRING"))
 
 
 class VectorStoreSettings(BaseModel):

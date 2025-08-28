@@ -189,5 +189,7 @@ Application settings are managed in `config/settings.py` using Pydantic models a
 *   Optimize batch processing for data ingestion.
 
 ## Next Steps
-
+    for AWS RDS
+    user: dtgraviet
+    pass: SubaruWRX080802
 * 
