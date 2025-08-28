@@ -187,9 +187,3 @@ Application settings are managed in `config/settings.py` using Pydantic models a
 *   Develop a user interface (CLI or Web).
 *   Add caching for embeddings to reduce API calls.
 *   Optimize batch processing for data ingestion.
-
-## Next Steps
-    for AWS RDS
-    user: dtgraviet
-    pass: SubaruWRX080802
-* 
